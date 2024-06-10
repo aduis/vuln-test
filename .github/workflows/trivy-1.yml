@@ -29,14 +29,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Build an image from Dockerfile
+        run: |
+          docker build -t local-test/vuln-test:${{ github.sha }} .
+
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@7b7aa264d83dc58691451798b4d117d53d21edfe
         with:
-          scan-type: 'fs'
-          image-ref: '.'
+          image-ref: 'local-test/vuln-test:${{ github.sha }}'
+          format: 'template'
+          scan-type: 'image'
           ignore-unfixed: true
           vuln-type: 'os,library'
-          format: 'template'
           template: '@/contrib/sarif.tpl'
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
