@@ -18,12 +18,12 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  scan-image:
     permissions:
       contents: read # for actions/checkout to fetch code
       security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
       actions: read # only required for a private repository by github/codeql-action/upload-sarif to get the Action run status
-    name: Build
+    name: scan-image
     runs-on: "ubuntu-20.04"
     steps:
       - name: Checkout code
@@ -32,6 +32,15 @@ jobs:
       - name: Build an image from Dockerfile
         run: |
           docker build -t local-test/vuln-test:${{ github.sha }} .
+
+      - name: Run Trivy in GitHub SBOM mode and submit results to Dependency Graph
+        uses: aquasecurity/trivy-action@7b7aa264d83dc58691451798b4d117d53d21edfe
+        with:
+          scan-type: 'image'
+          format: 'github'
+          output: 'dependency-results.sbom.json'
+          image-ref: 'local-test/vuln-test:${{ github.sha }}'
+          github-pat: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@7b7aa264d83dc58691451798b4d117d53d21edfe
@@ -49,3 +58,4 @@ jobs:
         uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: 'trivy-results.sarif'
+
