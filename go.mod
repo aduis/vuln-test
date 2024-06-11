@@ -8,4 +8,5 @@ require (
 	github.com/lmittmann/tint v1.0.4
 	golang.org/x/exp v0.0.0-20240604190554-fc45aab8b7f8
 	golang.org/x/text v0.16.0
+	golang.org/x/net v0.16.0
 )
